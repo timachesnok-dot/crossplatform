@@ -1,53 +1,55 @@
+import React, { useState, useContext } from 'react';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 
-import { useState } from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  StyleSheet,
-  Pressable
-} from 'react-native';
+// 1. Створюємо контекст
+const UserContext = React.createContext();
 
-export default function App() {
-  const [modalVisible, setModalVisible] = useState(false);
+// 2. Провайдер глобального стану
+function UserProvider({ children }) {
+  const [userName, setUserName] = useState('Іван');
+
+  return (
+    <UserContext.Provider value={{ userName, setUserName }}>
+      {children}
+    </UserContext.Provider>
+  );
+}
+
+// 3. Компонент HomeScreen
+function HomeScreen() {
+  const { userName } = useContext(UserContext);
 
   return (
     <View style={styles.container}>
-
-      <Pressable
-        style={styles.openButton}
-        onPress={() => setModalVisible(true)}
-      >
-        <Text style={styles.buttonText}>
-          Показати модальне вікно
-        </Text>
-      </Pressable>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>
-              Це модальне вікно!
-            </Text>
-
-            <Pressable
-              style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.buttonText}>
-                Закрити
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-
+      <Text style={styles.text}>Привіт, {userName}!</Text>
     </View>
+  );
+}
+
+// 4. Компонент ProfileScreen
+function ProfileScreen() {
+  const { userName, setUserName } = useContext(UserContext);
+
+  return (
+    <View style={styles.container}>
+      <Text>Введіть нове ім'я користувача:</Text>
+      <TextInput
+        style={styles.input}
+        value={userName}
+        onChangeText={setUserName}
+        placeholder="Ім'я користувача"
+      />
+    </View>
+  );
+}
+
+// 5. Головний компонент
+export default function App() {
+  return (
+    <UserProvider>
+      <HomeScreen />
+      <ProfileScreen />
+    </UserProvider>
   );
 }
 
@@ -56,45 +58,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 20
   },
-
-  openButton: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 10,
+  text: {
+    fontSize: 24,
+    marginBottom: 20
   },
-
-  modalBackground: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-
-  modalView: {
-    width: 300,
-    padding: 25,
-    backgroundColor: 'white',
-    borderRadius: 15,
-    alignItems: 'center',
-  },
-
-  modalText: {
-    fontSize: 20,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-
-  closeButton: {
-    backgroundColor: '#f44336',
-    padding: 12,
-    borderRadius: 8,
-  },
-
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    width: '80%',
+    borderRadius: 5
+  }
 });
