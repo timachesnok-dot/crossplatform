@@ -1,52 +1,56 @@
-import * as React from 'react';
-import { Text, View, Button, StyleSheet } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-const Stack = createNativeStackNavigator();
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  Modal,
+  StyleSheet,
+  Pressable
+} from 'react-native';
 
-// HomeScreen
-function HomeScreen({ navigation }) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Головний екран</Text>
-      <Button
-        title="Перейти на деталі"
-        onPress={() =>
-          navigation.navigate('Details', {
-            message: 'Привіт з головного екрану!',
-          })
-        }
-      />
-    </View>
-  );
-}
-
-// DetailsScreen
-function DetailsScreen({ route }) {
-  const { message } = route.params;
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Екран деталей</Text>
-      <Text style={styles.message}>{message}</Text>
-    </View>
-  );
-}
-
-// Головний компонент
 export default function App() {
+  const [modalVisible, setModalVisible] = useState(false);
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Details" component={DetailsScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={styles.container}>
+
+      <Pressable
+        style={styles.openButton}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={styles.buttonText}>
+          Показати модальне вікно
+        </Text>
+      </Pressable>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>
+              Це модальне вікно!
+            </Text>
+
+            <Pressable
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.buttonText}>
+                Закрити
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+    </View>
   );
 }
 
-// Стилі
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -54,14 +58,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-    fontWeight: 'bold',
+
+  openButton: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    borderRadius: 10,
   },
-  message: {
-    fontSize: 18,
-    color: 'gray',
-    marginTop: 10,
+
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+
+  modalView: {
+    width: 300,
+    padding: 25,
+    backgroundColor: 'white',
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+
+  modalText: {
+    fontSize: 20,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+
+  closeButton: {
+    backgroundColor: '#f44336',
+    padding: 12,
+    borderRadius: 8,
+  },
+
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
