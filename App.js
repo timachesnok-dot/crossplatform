@@ -1,89 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
 
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [error, setError] = useState('');
-  const [userData, setUserData] = useState(null);
+  const [storedName, setStoredName] = useState('');
 
-  const validateEmail = (email) => {
-    return email.includes('@') && email.includes('.');
+  useEffect(() => {
+    loadName();
+  }, []);
+
+  const loadName = async () => {
+    try {
+      const value = await AsyncStorage.getItem('userName');
+      if (value !== null) {
+        setStoredName(value);
+      }
+    } catch (error) {
+      console.log('Помилка завантаження:', error);
+    }
   };
 
-  const handleSubmit = () => {
-
-    if (!name || !email || !phone) {
-      setError('Будь ласка, заповніть усі поля');
-      return;
+  const saveName = async () => {
+    try {
+      await AsyncStorage.setItem('userName', name);
+      setStoredName(name);
+      setName('');
+    } catch (error) {
+      console.log('Помилка збереження:', error);
     }
+  };
 
-    if (!validateEmail(email)) {
-      setError('Невірний формат Email');
-      return;
+  const clearName = async () => {
+    try {
+      await AsyncStorage.removeItem('userName');
+      setStoredName('');
+    } catch (error) {
+      console.log('Помилка очищення:', error);
     }
-
-    setError('');
-
-    const data = {
-      name,
-      email,
-      phone
-    };
-
-    console.log('Дані користувача:', data);
-
-    setUserData(data);
-
-    setName('');
-    setEmail('');
-    setPhone('');
   };
 
   return (
     <View style={styles.container}>
 
-      <Text style={styles.title}>Форма користувача</Text>
+      <Text style={styles.title}>Збережене ім'я</Text>
+
+      <Text style={styles.savedName}>
+        {storedName ? storedName : "Немає збережених даних"}
+      </Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Ім'я"
+        placeholder="Введіть ім'я"
         value={name}
         onChangeText={setName}
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Електронна пошта"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Телефон"
-        keyboardType="numeric"
-        value={phone}
-        onChangeText={setPhone}
-      />
-
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-
-      <Pressable style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Надіслати</Text>
+      <Pressable style={styles.button} onPress={saveName}>
+        <Text style={styles.buttonText}>Зберегти</Text>
       </Pressable>
 
-      {userData && (
-        <View style={styles.result}>
-          <Text style={styles.resultTitle}>Введені дані:</Text>
-          <Text>Ім'я: {userData.name}</Text>
-          <Text>Email: {userData.email}</Text>
-          <Text>Телефон: {userData.phone}</Text>
-        </View>
-      )}
+      <Pressable style={styles.clearButton} onPress={clearName}>
+        <Text style={styles.buttonText}>Очистити</Text>
+      </Pressable>
 
     </View>
   );
@@ -94,6 +74,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
     backgroundColor: '#f2f2f2'
   },
@@ -101,11 +82,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 10
+  },
+
+  savedName: {
+    fontSize: 20,
     marginBottom: 25,
-    textAlign: 'center'
+    color: '#2e86de'
   },
 
   input: {
+    width: '80%',
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 12,
@@ -118,32 +105,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#2e86de',
     padding: 15,
     borderRadius: 8,
+    width: '80%',
     alignItems: 'center',
-    marginBottom: 20
+    marginBottom: 10
+  },
+
+  clearButton: {
+    backgroundColor: '#e74c3c',
+    padding: 15,
+    borderRadius: 8,
+    width: '80%',
+    alignItems: 'center'
   },
 
   buttonText: {
     color: 'white',
-    fontSize: 16,
     fontWeight: 'bold'
-  },
-
-  error: {
-    color: 'red',
-    marginBottom: 15,
-    textAlign: 'center'
-  },
-
-  result: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: 'white',
-    borderRadius: 8
-  },
-
-  resultTitle: {
-    fontWeight: 'bold',
-    marginBottom: 10
   }
 
 });
