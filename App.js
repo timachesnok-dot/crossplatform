@@ -1,110 +1,149 @@
-import { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  StyleSheet,
-  SafeAreaView
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 
 export default function App() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('https://jsonplaceholder.typicode.com/users');
-        const data = await response.json();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [error, setError] = useState('');
+  const [userData, setUserData] = useState(null);
 
-        const ukrainianUsers = data.map(user => ({
-          id: user.id,
-          імʼя: user.name,
-          електроннаПошта: user.email,
-          місто: user.address.city,
-          компанія: user.company.name,
-        }));
+  const validateEmail = (email) => {
+    return email.includes('@') && email.includes('.');
+  };
 
-        setUsers(ukrainianUsers);
-      } catch (err) {
-        setError('Помилка при завантаженні даних');
-      } finally {
-        setLoading(false);
-      }
+  const handleSubmit = () => {
+
+    if (!name || !email || !phone) {
+      setError('Будь ласка, заповніть усі поля');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError('Невірний формат Email');
+      return;
+    }
+
+    setError('');
+
+    const data = {
+      name,
+      email,
+      phone
     };
 
-    fetchUsers();
-  }, []);
+    console.log('Дані користувача:', data);
 
-  if (loading) {
-    return <ActivityIndicator size="large" style={styles.loader} />;
-  }
+    setUserData(data);
 
-  if (error) {
-    return <Text style={styles.error}>{error}</Text>;
-  }
+    setName('');
+    setEmail('');
+    setPhone('');
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Список користувачів</Text>
+    <View style={styles.container}>
 
-      <FlatList
-        data={users}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.name}>{item.імʼя}</Text>
-            <Text style={styles.text}>📧 {item.електроннаПошта}</Text>
-            <Text style={styles.text}>🏙 Місто: {item.місто}</Text>
-            <Text style={styles.text}>🏢 Компанія: {item.компанія}</Text>
-          </View>
-        )}
+      <Text style={styles.title}>Форма користувача</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Ім'я"
+        value={name}
+        onChangeText={setName}
       />
-    </SafeAreaView>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Електронна пошта"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Телефон"
+        keyboardType="numeric"
+        value={phone}
+        onChangeText={setPhone}
+      />
+
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      <Pressable style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>Надіслати</Text>
+      </Pressable>
+
+      {userData && (
+        <View style={styles.result}>
+          <Text style={styles.resultTitle}>Введені дані:</Text>
+          <Text>Ім'я: {userData.name}</Text>
+          <Text>Email: {userData.email}</Text>
+          <Text>Телефон: {userData.phone}</Text>
+        </View>
+      )}
+
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
-    backgroundColor: '#eef2f7',
-    padding: 20,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#1e293b',
-  },
-  loader: {
-    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f2f2f2'
   },
+
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 25,
+    textAlign: 'center'
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 12,
+    marginBottom: 15,
+    borderRadius: 8,
+    backgroundColor: 'white'
+  },
+
+  button: {
+    backgroundColor: '#2e86de',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20
+  },
+
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
+
   error: {
     color: 'red',
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    padding: 18,
-    borderRadius: 15,
     marginBottom: 15,
-    elevation: 4,
+    textAlign: 'center'
   },
-  name: {
-    fontSize: 18,
+
+  result: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: 'white',
+    borderRadius: 8
+  },
+
+  resultTitle: {
     fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#0f172a',
-  },
-  text: {
-    fontSize: 14,
-    color: '#475569',
-    marginBottom: 4,
-  },
+    marginBottom: 10
+  }
+
 });
